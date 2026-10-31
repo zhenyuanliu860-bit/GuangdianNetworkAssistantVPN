@@ -1,0 +1,38 @@
+name: Build Android APK from ZIP
+
+on:
+  push:
+    paths:
+      - 'GuangdianNetworkAssistantVPN-project.zip'
+      - '.github/workflows/build-from-zip.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Extract project and build APK
+        run: |
+          unzip -q GuangdianNetworkAssistantVPN-project.zip
+          cd GuangdianNetworkAssistantVPN
+          gradle --no-daemon assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GuangdianNetworkAssistantVPN-APK
+          path: GuangdianNetworkAssistantVPN/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
